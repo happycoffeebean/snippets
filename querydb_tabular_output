@@ -1,0 +1,153 @@
+<head>
+    <meta charset="utf-8">
+    <title>Your Title Here</title>
+// Inline style sheet -- sets up table and list behavior
+<style>
+
+table, th, td, tr {
+   border: 1px solid black;
+   width: 100%;
+   height: 75px;
+   table-layout: fixed;	
+}
+tr:hover{background-color:#f5f5f5};
+
+ul {
+    width: 100%;
+    display: table;
+    table-layout: fixed; /* optional, for equal spacing */
+    border-collapse: collapse;
+}
+li {
+    display: table-cell;
+    text-align: center;
+    border: 1px solid pink;
+    vertical-align: middle;
+}
+
+</style>
+
+</head>
+<body>
+</body>
+</html>
+
+
+<?php
+
+$d = '/base_directory';
+ini_set('include_path', "$d:$d/down_one_level_1:$d/down_one_level_2/next");
+
+require_once("...");
+
+// The following is to determine dev vs. prod environment
+$host = gethostname();
+
+if($host == 'ip-10-0-1-1') {
+	$host = 'db-development';
+	$db = 'database';
+} else {
+	$host = 'db-production';
+	$db = 'production_database';
+  }
+
+$user = 'username';
+$pass='password';   // needs security applied
+$charset = 'utf8';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+
+// Connect to the database
+
+ $opt = [
+ PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+ PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+ PDO::ATTR_EMULATE_PREPARES => false
+  ];
+
+
+ try{
+ $dbh = new PDO($dsn, $user, $pass, $opt);
+ }
+        catch (PDOException $e) {
+        echo 'Connection failure: ' . $e->getMessage();
+        }
+
+
+// Set up date variables
+date_default_timezone_set('America/New_York');
+$date = date('m/d/Y h:i:s a', time());
+$pieces = date_parse($date);
+
+        if($pieces['month']<10) {  // Add a leading zero in months 1-9
+        $month=str_pad($pieces['month'], 2, '0', STR_PAD_LEFT);
+        }
+
+$thisyear = $pieces['year'];
+$lastyear = ($pieces['year']-1);
+$month = $pieces['month'];
+
+
+
+// Set up query
+$stmt = $dbh->prepare("SELECT DISTINCT(field) FROM table WHERE criteria = 'foo' \n\n");
+$stmt->execute();
+
+$result = $stmt->fetchall(PDO::FETCH_ASSOC);
+      
+foreach($result as $row => $val) {
+	$foo_troo = $val['foo_troo'];
+
+	$user = class::method($foo_troo);
+	$sub = $user->getInfoFromClass();
+	
+	$thing1 = ($sub['thing1);
+	$thing2 = $sub['thing2'];
+	$thing3 = $sub['thing3'];
+	$thing4 = $sub['thing4'];
+
+// Query that spans multiple user tables
+$final_stmt = $dbh->prepare("SELECT firstname, lastname, email, phonenum, phonenum2 FROM users_00 WHERE email LIKE '$thing1'                                     
+                                UNION
+                                SELECT firstname, lastname, email, phonenum, phonenum2 FROM users_01 WHERE email LIKE '$thing1'
+                                UNION 
+                                SELECT firstname, lastname, email, phonenum, phonenum2 FROM users_02 WHERE email LIKE '$thing1'
+                                ...
+                                SELECT firstname, lastname, email, phonenum, phonenum2 FROM users_10 WHERE email LIKE '$thing1'
+                                ");
+?>
+<table id='display'>
+<ul>
+   <li> <td>First Name</td></li>
+   <li> <td>Last Name</td></li>
+   <li><<td>Email</td></li>
+   <li> <td>Phone</td></li>
+   <li> <td>Secondary Phone</td></li>
+
+    <li> <td>Subscription Level</td></li>
+    <li> <td>Credit Limit</td></li>
+    <li> <td>Credit Used</td></li>
+</ul>
+<?php
+$final_stmt->execute();
+        $info = $final_stmt->fetchall(PDO::FETCH_ASSOC);
+
+        foreach($info as $r => $v) {
+        ?>
+	<table id='display'>
+	<ul>
+		   <li> <td><?php echo $v['firstname'];?></td></li>
+		   <li> <td><?php echo $v['lastname'];?></td></li>
+		   <li> <td><a href="mailto:<?php echo $v['email'];?>"><?php echo $v['email'];?></a></td></li>
+		   <li> <td><?php echo $v['phonenum'];?></td></li>
+		   <li> <td><?php echo $v['phonenum2'];?></td></li>
+        	
+		    <li><td><?php echo $subscription;?></td></li>
+		    <li><td><?php echo $limit;?></td></li>
+		    <li><td><?php echo $used;?></td></li>
+	</ul>
+	<?php } ?> 
+
+<?php } ?>
+
